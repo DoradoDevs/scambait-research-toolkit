@@ -7,6 +7,15 @@ behavioral signals, and analyzing fraud patterns. It runs entirely on
 This is a **defensive / academic security research** tool. It is not a bot, it
 does not message anyone on your behalf, and it stores everything locally.
 
+> **Disclaimer.** This is a dual-use security-research tool intended for
+> legitimate defensive research, fraud-awareness training, and education only.
+> Do not use it to harass individuals, collect data without a lawful basis, or
+> break the law. See [LEGAL_NOTICE.md](LEGAL_NOTICE.md) for the full
+> responsible-use guidelines. The software is provided "as is", without warranty.
+
+> **New contributor?** Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for a
+> component-by-component tour of how the app is wired together.
+
 ---
 
 ## What it does
@@ -31,19 +40,42 @@ does not message anyone on your behalf, and it stores everything locally.
 - **Audit logging & VM-reset helpers** - every action is logged; built-in
   wipe/snapshot-prep endpoints support clean VM snapshots.
 
+## Tech stack
+
+- **Language:** Python 3.10+
+- **Web framework:** [FastAPI](https://fastapi.tiangolo.com/) on
+  [Uvicorn](https://www.uvicorn.org/) (ASGI)
+- **Persistence:** SQLite via `aiosqlite` (async, local file)
+- **Validation:** Pydantic v2
+- **Frontend:** Server-rendered Jinja2 templates + vanilla JavaScript (no build
+  step, no CDN)
+- **Optional analysis libs:** `filetype` / `python-magic` (file typing),
+  `geoip2` (offline GeoIP), `ssdeep` (fuzzy hashing) — all degrade gracefully if
+  absent
+
 ## Architecture
+
+For the full architecture — component breakdown, request/data flow diagrams,
+data stores, and the safety model — see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+Project structure at a glance:
 
 ```
 scambait-research-toolkit/
 ├── config.py               # All settings (env-overridable, safe defaults)
 ├── run.py                  # Entry point -> starts uvicorn on 127.0.0.1
 ├── core/                   # FastAPI app, SQLite layer, models, safety controls
+│   ├── app.py              # FastAPI routes + middleware (primary router)
+│   ├── models.py           # Pydantic schemas & enums
+│   ├── database.py         # SQLite schema + async CRUD
+│   └── safety.py           # Audit, data safety, VM reset, compliance
 ├── modules/
 │   ├── analyzer/           # File hashing, static analysis, URL defanging
 │   ├── metadata/           # Request metadata + enrichment (local only)
 │   ├── scripts/            # Personas, delay patterns, response engine
 │   └── wallet/             # Fake wallet honeypot
 ├── dashboard/              # Jinja2 templates + static JS/CSS dashboard
+├── docs/                   # Architecture and contributor docs
 └── tests/                  # Test scaffold (see "Tests" below - WIP)
 ```
 
@@ -91,6 +123,41 @@ Then open:
 
 To change the port, set `SCAMBAIT_PORT` in your `.env` (or the environment).
 The host is intentionally locked to `127.0.0.1` in `config.py`.
+
+## Usage
+
+The typical workflow is driven from the dashboard:
+
+1. **Create a session** - click **+ New Session**, pick a scam type and
+   (optionally) a persona script.
+2. **Log messages** - record inbound (scammer) and outbound (your) messages.
+   Inbound messages are auto-scanned for scam patterns.
+3. **Analyze artifacts** - upload suspicious attachments (hashed + statically
+   inspected, never executed) and paste suspicious URLs (defanged + analyzed,
+   never fetched) from the **Analysis** page.
+4. **Study reactions** - point a scammer at the **Wallet Honeypot** page and
+   review the interaction log.
+5. **Export** - generate a per-session JSON report or an audit-log export from
+   the **Reports** page.
+
+Everything is also available as a JSON API (interactive docs at
+`http://localhost:8000/api/docs`). Commonly used endpoints:
+
+| Method & path | Purpose |
+| --- | --- |
+| `POST /api/sessions` | Create a research session |
+| `GET /api/sessions` | List sessions |
+| `GET /api/sessions/{id}` | Get a session with its messages/attachments/flags |
+| `POST /api/messages` | Log a message (auto pattern-detection on inbound) |
+| `POST /api/upload` | Upload + statically analyze a file |
+| `POST /api/analyze-url` | Defang + analyze a URL |
+| `POST /api/detect-patterns` | Run scam-pattern detection on text |
+| `GET /api/wallet` | Fetch fake honeypot wallet data |
+| `GET /api/stats` | Dashboard statistics |
+| `GET /api/export/session/{id}` | Export a session report (JSON) |
+| `GET /api/export/audit` | Export the audit log |
+| `POST /api/safety/full-wipe` | Wipe all local data (VM reset) |
+| `GET /api/health` | Health check |
 
 ## Configuration
 
