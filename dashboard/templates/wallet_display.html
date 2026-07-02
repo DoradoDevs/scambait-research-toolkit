@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom Wallet - Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .disclaimer-banner {
+            background: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            font-weight: bold;
+        }
+
+        .wallet-container {
+            max-width: 480px;
+            margin: 60px auto 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .wallet-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .wallet-logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .wallet-logo span {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .network-badge {
+            background: rgba(148, 87, 235, 0.2);
+            color: #9457eb;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .balance-section {
+            text-align: center;
+            padding: 32px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .balance-sol {
+            font-size: 18px;
+            color: #9457eb;
+        }
+
+        .wallet-address {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .wallet-address code {
+            font-family: monospace;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .copy-icon {
+            color: #666;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(148, 87, 235, 0.2);
+        }
+
+        .action-btn .icon {
+            font-size: 24px;
+        }
+
+        .action-btn span {
+            font-size: 12px;
+        }
+
+        .tokens-section {
+            margin-top: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .token-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #9457eb, #6366f1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .token-name {
+            font-weight: 500;
+        }
+
+        .token-symbol {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .token-balance {
+            text-align: right;
+        }
+
+        .token-amount {
+            font-weight: 500;
+        }
+
+        .token-value {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .transactions-section {
+            margin-top: 24px;
+        }
+
+        .tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tx-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tx-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(34, 197, 94, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+        }
+
+        .tx-icon.outgoing {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .tx-type {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .tx-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .tx-amount {
+            text-align: right;
+        }
+
+        .tx-amount.positive {
+            color: #22c55e;
+        }
+
+        .tx-amount.negative {
+            color: #ef4444;
+        }
+
+        .tx-usd {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(148, 87, 235, 0.3);
+            border-top-color: #9457eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: #888;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            padding: 32px;
+            border-radius: 24px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-error {
+            color: #ef4444;
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .modal-text {
+            color: #888;
+            margin-bottom: 24px;
+        }
+
+        .modal-btn {
+            background: #9457eb;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .research-watermark {
+            text-align: center;
+            padding: 20px;
+            color: #444;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="disclaimer-banner">
+        RESEARCH HONEYPOT - NO REAL FUNDS - FOR SECURITY ANALYSIS ONLY
+    </div>
+
+    <div class="wallet-container">
+        <div class="wallet-header">
+            <div class="wallet-logo">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,#9457eb,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">👻</div>
+                <span>Phantom</span>
+            </div>
+            <div class="network-badge">Mainnet</div>
+        </div>
+
+        <div class="balance-section">
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-amount" id="balance-usd">$4,783,291.00</div>
+            <div class="balance-sol" id="balance-sol">47,832.91 SOL</div>
+
+            <div class="wallet-address" onclick="copyAddress()">
+                <code id="wallet-addr">{{ wallet.address[:4] }}...{{ wallet.address[-4:] }}</code>
+                <span class="copy-icon">📋</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn" onclick="showLoading('Receiving...')">
+                <span class="icon">↓</span>
+                <span>Receive</span>
+            </button>
+            <button class="action-btn" onclick="simulateSend()">
+                <span class="icon">↑</span>
+                <span>Send</span>
+            </button>
+            <button class="action-btn" onclick="showLoading('Loading swap...')">
+                <span class="icon">⇄</span>
+                <span>Swap</span>
+            </button>
+            <button class="action-btn" onclick="showLoading('Connecting...')">
+                <span class="icon">🔗</span>
+                <span>Connect</span>
+            </button>
+        </div>
+
+        <div class="tokens-section">
+            <div class="section-title">Tokens</div>
+
+            <div class="token-item">
+                <div class="token-info">
+                    <div class="token-icon">◎</div>
+                    <div>
+                        <div class="token-name">Solana</div>
+                        <div class="token-symbol">SOL</div>
+                    </div>
+                </div>
+                <div class="token-balance">
+                    <div class="token-amount">47,832.91</div>
+                    <div class="token-value">$4,783,291.00</div>
+                </div>
+            </div>
+
+            <div class="token-item">
+                <div class="token-info">
+                    <div class="token-icon" style="background:linear-gradient(135deg,#2775ca,#3b82f6);">$</div>
+                    <div>
+                        <div class="token-name">USD Coin</div>
+                        <div class="token-symbol">USDC</div>
+                    </div>
+                </div>
+                <div class="token-balance">
+                    <div class="token-amount">25,430.00</div>
+                    <div class="token-value">$25,430.00</div>
+                </div>
+            </div>
+
+            <div class="token-item">
+                <div class="token-info">
+                    <div class="token-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">🐕</div>
+                    <div>
+                        <div class="token-name">Bonk</div>
+                        <div class="token-symbol">BONK</div>
+                    </div>
+                </div>
+                <div class="token-balance">
+                    <div class="token-amount">50,000,000</div>
+                    <div class="token-value">$2,150.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="transactions-section">
+            <div class="section-title">Recent Activity</div>
+
+            <div class="tx-item">
+                <div class="tx-info">
+                    <div class="tx-icon">↓</div>
+                    <div>
+                        <div class="tx-type">Staking Reward</div>
+                        <div class="tx-time">2 hours ago</div>
+                    </div>
+                </div>
+                <div class="tx-amount positive">
+                    <div>+2.4521 SOL</div>
+                    <div class="tx-usd">$245.21</div>
+                </div>
+            </div>
+
+            <div class="tx-item">
+                <div class="tx-info">
+                    <div class="tx-icon">↓</div>
+                    <div>
+                        <div class="tx-type">Received</div>
+                        <div class="tx-time">Yesterday</div>
+                    </div>
+                </div>
+                <div class="tx-amount positive">
+                    <div>+500.0000 SOL</div>
+                    <div class="tx-usd">$50,000.00</div>
+                </div>
+            </div>
+
+            <div class="tx-item">
+                <div class="tx-info">
+                    <div class="tx-icon">↓</div>
+                    <div>
+                        <div class="tx-type">Airdrop</div>
+                        <div class="tx-time">3 days ago</div>
+                    </div>
+                </div>
+                <div class="tx-amount positive">
+                    <div>+1,000.0000 SOL</div>
+                    <div class="tx-usd">$100,000.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="research-watermark">
+        Scambait Research Suite v1.0 | This is a honeypot for security research
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loading-text">Processing...</div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal" id="error-modal">
+        <div class="modal-content">
+            <div class="modal-error">⚠️</div>
+            <div class="modal-title">Transaction Failed</div>
+            <div class="modal-text" id="error-text">Network congestion detected. Please try again in a few minutes.</div>
+            <button class="modal-btn" onclick="closeModal()">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Log all interactions
+        function logInteraction(action, details) {
+            fetch('/api/wallet/interaction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, details })
+            }).catch(() => {});
+        }
+
+        function showLoading(text) {
+            document.getElementById('loading-text').textContent = text;
+            document.getElementById('loading').style.display = 'flex';
+            logInteraction('loading_shown', { text });
+
+            // Hide after delay
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                showError();
+            }, 5000 + Math.random() * 5000);
+        }
+
+        function showError() {
+            const errors = [
+                "Network congestion detected. Please try again in a few minutes.",
+                "Transaction validation failed. Please verify the details.",
+                "RPC node timeout. Connecting to backup node...",
+                "Signature verification failed. Please reconnect your wallet.",
+                "Rate limit exceeded. Please wait 60 seconds.",
+                "Connection interrupted. Please check your network."
+            ];
+            document.getElementById('error-text').textContent = errors[Math.floor(Math.random() * errors.length)];
+            document.getElementById('error-modal').style.display = 'flex';
+            logInteraction('error_shown', { error: document.getElementById('error-text').textContent });
+        }
+
+        function closeModal() {
+            document.getElementById('error-modal').style.display = 'none';
+            logInteraction('modal_closed', {});
+        }
+
+        function copyAddress() {
+            logInteraction('address_copied', { address: '{{ wallet.address }}' });
+            alert('Address copied to clipboard!');
+        }
+
+        function simulateSend() {
+            logInteraction('send_clicked', {});
+            showLoading('Preparing transaction...');
+        }
+
+        // Log page view
+        logInteraction('page_view', { timestamp: new Date().toISOString() });
+    </script>
+</body>
+</html>

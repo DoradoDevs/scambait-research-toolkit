@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Scambait Research Suite{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">🎣 Scambait</h1>
+                <span class="version">v1.0.0</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <a href="/">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'sessions' %}active{% endif %}">
+                    <a href="/#sessions">
+                        <span class="nav-icon">💬</span>
+                        <span class="nav-text">Sessions</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'analysis' %}active{% endif %}">
+                    <a href="/analysis">
+                        <span class="nav-icon">🔍</span>
+                        <span class="nav-text">Analysis</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'wallet' %}active{% endif %}">
+                    <a href="/wallet">
+                        <span class="nav-icon">💰</span>
+                        <span class="nav-text">Wallet Honeypot</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+                    <a href="/reports">
+                        <span class="nav-icon">📄</span>
+                        <span class="nav-text">Reports</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="safety-indicator">
+                    <span class="indicator-dot safe"></span>
+                    <span>Local Only Mode</span>
+                </div>
+                <a href="/api/docs" class="api-link" target="_blank">API Docs</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="breadcrumb">
+                    {% block breadcrumb %}
+                    <span>Dashboard</span>
+                    {% endblock %}
+                </div>
+                <div class="top-bar-actions">
+                    <button class="btn btn-secondary" onclick="refreshPage()">
+                        🔄 Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="showNewSessionModal()">
+                        + New Session
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- New Session Modal -->
+    <div class="modal" id="new-session-modal">
+        <div class="modal-backdrop" onclick="closeModal('new-session-modal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Research Session</h2>
+                <button class="modal-close" onclick="closeModal('new-session-modal')">&times;</button>
+            </div>
+            <form id="new-session-form" onsubmit="createSession(event)">
+                <div class="form-group">
+                    <label for="session-title">Session Title</label>
+                    <input type="text" id="session-title" placeholder="e.g., Crypto scam investigation #1">
+                </div>
+                <div class="form-group">
+                    <label for="scam-type">Scam Type</label>
+                    <select id="scam-type">
+                        <option value="">Select type...</option>
+                        <option value="crypto">Cryptocurrency Scam</option>
+                        <option value="tech_support">Tech Support Scam</option>
+                        <option value="romance">Romance Scam</option>
+                        <option value="investment">Investment Scam</option>
+                        <option value="phishing">Phishing</option>
+                        <option value="lottery">Lottery/Prize Scam</option>
+                        <option value="employment">Employment Scam</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="source">Source</label>
+                    <input type="text" id="source" placeholder="Where did this contact originate?">
+                </div>
+                <div class="form-group">
+                    <label for="script-id">Baiting Script</label>
+                    <select id="script-id">
+                        <option value="">No script (manual)</option>
+                        <option value="confused_elderly">Confused Elderly</option>
+                        <option value="tech_illiterate">Tech Illiterate</option>
+                        <option value="overly_eager">Overly Eager</option>
+                        <option value="suspicious_curious">Suspicious but Curious</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" rows="3" placeholder="Any initial notes..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('new-session-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

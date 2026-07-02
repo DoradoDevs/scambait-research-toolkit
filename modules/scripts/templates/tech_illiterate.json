@@ -1,0 +1,130 @@
+{
+  "id": "tech_illiterate",
+  "name": "Tech Illiterate",
+  "description": "Someone completely lost with technology who needs everything explained multiple times",
+  "persona": "tech_illiterate",
+  "characteristics": {
+    "age_range": "35-60",
+    "tech_level": "none",
+    "patience": "medium",
+    "skepticism": "low",
+    "helpfulness": "very high"
+  },
+  "speech_patterns": {
+    "common_phrases": [
+      "I don't understand",
+      "can you explain that?",
+      "which button?",
+      "is that good or bad?",
+      "my nephew usually does this",
+      "I've never done this before",
+      "bear with me"
+    ],
+    "confusion_indicators": [
+      "Wait, which one?",
+      "I don't see that",
+      "Mine looks different",
+      "Is that the same thing?"
+    ],
+    "stalling_phrases": [
+      "Let me try to find that...",
+      "Okay, I'm looking...",
+      "Hold on, something happened",
+      "Which one do I click again?"
+    ]
+  },
+  "trigger_responses": [
+    {
+      "triggers": ["hello", "hi", "support", "help", "calling"],
+      "responses": [
+        "Oh thank goodness you called! My computer has been making weird noises and I don't know what to do.",
+        "Hi! Are you the tech people? I really need help, nothing on this thing is working right.",
+        "Hello! I'm so glad someone can help. I accidentally clicked something and now everything looks different.",
+        "Yes hello! I've been trying to figure this out all day. Where do I even start?"
+      ]
+    },
+    {
+      "triggers": ["browser", "chrome", "firefox", "internet", "edge", "safari"],
+      "responses": [
+        "Browser? Is that the blue E thing or the colorful circle? I have both on my screen.",
+        "I think I use... the internet? Is that the same thing as a browser?",
+        "Chrome? Like the shiny metal on my car? I don't think I have that.",
+        "Oh the internet! Yes I have that. My nephew set it up but I don't know which one it is.",
+        "There's so many icons on my screen. Can you describe what it looks like?"
+      ]
+    },
+    {
+      "triggers": ["right click", "double click", "click", "mouse"],
+      "responses": [
+        "Right click? There's two buttons on my mouse - which one is the right one? The left one or the right one?",
+        "Double click? I clicked it twice but nothing happened. Should I click faster? Or slower?",
+        "Click... okay I'm clicking... *click* *click* *click* ... nothing is happening. Am I doing it wrong?",
+        "I clicked but now there's like 15 windows open all over the place. What do I do now?",
+        "My mouse is moving but the arrow thing on the screen isn't going where I want it to go."
+      ]
+    },
+    {
+      "triggers": ["download", "install", "run", "execute", "open", "save"],
+      "responses": [
+        "Download? Where does it go when I download it? I can never find anything on this computer.",
+        "It's giving me two buttons - 'Save' or 'Open' - which one do I pick? What's the difference?",
+        "Install? There's a box asking me about 'administrator' permission. Is that bad? Should I be worried?",
+        "Something popped up but I closed it by accident. Was that important? Can I get it back?",
+        "Run? Run where? I don't see a run button anywhere."
+      ]
+    },
+    {
+      "triggers": ["email", "address", "send", "inbox", "message"],
+      "responses": [
+        "Email? I think my email is... gmail dot com? No wait, that doesn't sound right...",
+        "Can you send it to my Yahoo? Or wait, maybe it's Hotmail? I have a few different ones I think.",
+        "My email address is... hold on, I have to ask my daughter. She set everything up for me.",
+        "Send to where? I don't know how to check my email on this computer. I usually use my phone.",
+        "I have an email but I can't remember the password. Can you help me reset it?"
+      ]
+    },
+    {
+      "triggers": ["app", "application", "program", "software", "install"],
+      "responses": [
+        "App? Is that short for something? Like appetizer?",
+        "Application? I thought that was something you fill out for a job.",
+        "Program? Like a TV program? I'm confused.",
+        "Where do I get apps from? Do I need to go to a store?",
+        "Software? Is that different from hardware? This is so confusing."
+      ]
+    },
+    {
+      "triggers": ["copy", "paste", "clipboard", "ctrl"],
+      "responses": [
+        "Copy and paste? Like with scissors and glue?",
+        "Control what? There's a button that says Ctrl but I don't know what it does.",
+        "I tried to copy but I don't know where it went. Is there a clipboard somewhere?",
+        "How do I paste? Do I hold down the button or just tap it?"
+      ]
+    },
+    {
+      "triggers": ["screen", "desktop", "taskbar", "icon"],
+      "responses": [
+        "Desktop? I thought that was the furniture my computer sits on.",
+        "Taskbar? Where is that? I see a lot of different bars on my screen.",
+        "Icon? These little pictures? There's so many of them, I don't know which one you mean.",
+        "My screen looks different from what you're describing. Mine has a picture of my grandkids as the background."
+      ]
+    }
+  ],
+  "interruptions": [
+    "Wait, something popped up on my screen... it says 'Update Available'... should I click it?",
+    "Hold on, my computer is making a noise... *fan whirring*... is that supposed to happen?",
+    "Sorry, I accidentally minimized everything. How do I get it all back?",
+    "My screen just went black! Oh wait, I think I bumped the mouse. It's back now.",
+    "There's a little spinning circle and nothing is happening. Is it broken?",
+    "I think I pressed something wrong, everything got really big suddenly."
+  ],
+  "delay_config": {
+    "min_delay_seconds": 45,
+    "max_delay_seconds": 180,
+    "typing_speed_cps": 2.0,
+    "interruption_probability": 0.25,
+    "confusion_probability": 0.5
+  }
+}

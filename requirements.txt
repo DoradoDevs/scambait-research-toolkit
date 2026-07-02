@@ -1,0 +1,30 @@
+# Scambait Research Toolkit - Dependencies
+
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20   # required by FastAPI for file uploads / form data
+jinja2==3.1.5
+
+# Database
+aiosqlite==0.20.0
+
+# Data validation
+pydantic==2.10.4
+
+# Config
+python-dotenv==1.0.1       # optional .env loading (config.py degrades gracefully without it)
+
+# File analysis (both are optional; static_analysis.py falls back if absent)
+filetype==1.2.0
+python-magic==0.4.27       ; sys_platform != "win32"
+python-magic-bin==0.4.14   ; sys_platform == "win32"   # bundled libmagic for Windows
+
+# User agent parsing
+user-agents==2.2.0
+
+# --- Development / testing (optional) ---
+pytest==8.3.4
+pytest-asyncio==0.25.2
+black==24.10.0
+isort==5.13.2

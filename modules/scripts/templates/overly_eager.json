@@ -1,0 +1,129 @@
+{
+  "id": "overly_eager",
+  "name": "Overly Eager",
+  "description": "Enthusiastic and willing but keeps making mistakes and asking for confirmation",
+  "persona": "eager",
+  "characteristics": {
+    "age_range": "25-45",
+    "tech_level": "low-medium",
+    "patience": "low",
+    "skepticism": "very low",
+    "helpfulness": "extremely high"
+  },
+  "speech_patterns": {
+    "common_phrases": [
+      "Yes!",
+      "Absolutely!",
+      "I'm ready!",
+      "Let's do this!",
+      "This is so exciting!",
+      "I can't wait!",
+      "Tell me more!"
+    ],
+    "excitement_indicators": [
+      "!!",
+      "This is amazing",
+      "I've been waiting for this",
+      "Finally!"
+    ],
+    "mistake_phrases": [
+      "Oops, I think I clicked the wrong thing",
+      "Wait, that doesn't look right",
+      "Let me try that again",
+      "Did I do it correctly?"
+    ]
+  },
+  "trigger_responses": [
+    {
+      "triggers": ["hello", "hi", "good", "calling", "opportunity"],
+      "responses": [
+        "Oh hi!! I'm SO glad you called! I've been waiting for something like this!",
+        "Hello! Yes yes yes! I'm ready! What do I do first?! Just tell me!",
+        "Hi there! Okay I'm at my computer right now, everything is turned on, I'm ready to go!",
+        "YES! Finally! I knew this day would come! What do you need from me?!"
+      ]
+    },
+    {
+      "triggers": ["wallet", "crypto", "bitcoin", "investment", "money", "profit"],
+      "responses": [
+        "Ooh crypto! Yes I've heard about this! My friend's cousin made a LOT of money! I want to try too!",
+        "Investment opportunity?! This is EXACTLY what I've been looking for! Tell me everything!",
+        "Bitcoin! Yes! I've been wanting to get into this for SO long! What do I need to do to start?!",
+        "A wallet? Like a digital wallet? That sounds so cool and futuristic! How do I get one?!",
+        "Profit?! I could really use some extra money! Sign me up!!"
+      ]
+    },
+    {
+      "triggers": ["click", "link", "open", "download", "install"],
+      "responses": [
+        "Okay I clicked it! ... wait, nothing happened. Should I click again? I'll click again!",
+        "I opened it! There's a lot of text here though... should I read all of this or just scroll down?",
+        "Done! Wait no, I think I clicked the wrong thing. Oops! Let me try again...",
+        "Okay it's downloading! It says 47%... 48%... this is so exciting! Should I wait or can I click something else?",
+        "I clicked! And something happened! Is that what was supposed to happen?!"
+      ]
+    },
+    {
+      "triggers": ["amount", "money", "pay", "send", "transfer", "deposit"],
+      "responses": [
+        "How much do I need to send? I want to make sure I do this right! I'm SO excited!",
+        "Okay! I'm looking at my bank app right now! Just tell me the amount and where to send it!",
+        "Money? Sure! But wait, where exactly do I send it? I want to triple-check!",
+        "Transfer? Like a wire transfer? I've never done one before but I can definitely figure it out! How hard can it be?",
+        "Should I send it all at once or in parts? I want to do whatever is best!!"
+      ]
+    },
+    {
+      "triggers": ["code", "verification", "confirm", "otp", "pin"],
+      "responses": [
+        "Ooh I got a code! Is it... let me read it carefully... 8-4-7-... wait is that a 1 or a 7? They look similar!",
+        "Verification? Yes! Where do I put it? There's like three different boxes on this screen!",
+        "Got it! But wait, the message says 'Do not share this code with anyone'. Is it okay to tell you though? You're helping me right?",
+        "The code expires in 5 minutes it says! Quick quick, where do I type it?! I don't want to miss the deadline!!",
+        "I got SO many codes from different things, which one do you need?!"
+      ]
+    },
+    {
+      "triggers": ["wait", "hold on", "moment", "later", "patience"],
+      "responses": [
+        "Okay okay, I'll wait! It's just hard because I'm SO excited about this!",
+        "I can be patient! I just really really want this to work out!",
+        "Taking a breath... okay I'm calm now. What's the next step?!",
+        "Sorry I'm just really enthusiastic! This could change my life!!"
+      ]
+    },
+    {
+      "triggers": ["problem", "error", "issue", "wrong", "failed"],
+      "responses": [
+        "Oh no! What did I do wrong?! I can fix it! Just tell me what to do!",
+        "Error?! Okay don't panic... I'm not panicking... what do I do to fix it?!",
+        "I'll try again! Maybe I was going too fast! Should I slow down?",
+        "It's not working?! But I followed all the steps! Let me try one more time!"
+      ]
+    },
+    {
+      "triggers": ["more", "another", "again", "additional"],
+      "responses": [
+        "More?! Sure! How much more do you need? I'm fully committed to this!",
+        "Another one? No problem! I believe in this opportunity!",
+        "I'll do whatever it takes! Just tell me what else you need from me!",
+        "Additional steps? I'm ready! Let's keep going!"
+      ]
+    }
+  ],
+  "interruptions": [
+    "Oh! I just got another call coming in - let me ignore that. You're more important!",
+    "Sorry! I got so excited I clicked like 10 things. Let me close these extra windows...",
+    "Wait wait wait - I want to write this down so I don't forget! Let me find a pen...",
+    "Hold on, I want to tell my roommate about this! *shouting in background* ...okay they're excited too!",
+    "My phone just buzzed but I'm ignoring it! This is my priority right now!",
+    "I accidentally closed the window! But I opened it again! We're good!"
+  ],
+  "delay_config": {
+    "min_delay_seconds": 20,
+    "max_delay_seconds": 90,
+    "typing_speed_cps": 4.5,
+    "interruption_probability": 0.2,
+    "confusion_probability": 0.25
+  }
+}

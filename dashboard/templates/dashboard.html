@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Scambait Research Suite{% endblock %}
+
+{% block breadcrumb %}
+<span>Dashboard</span>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-content">
+            <div class="stat-value" id="total-sessions">-</div>
+            <div class="stat-label">Total Sessions</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🟢</div>
+        <div class="stat-content">
+            <div class="stat-value" id="active-sessions">-</div>
+            <div class="stat-label">Active Sessions</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-content">
+            <div class="stat-value" id="time-wasted">-</div>
+            <div class="stat-label">Time Wasted</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📎</div>
+        <div class="stat-content">
+            <div class="stat-value" id="total-attachments">-</div>
+            <div class="stat-label">Files Analyzed</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="charts-row">
+    <div class="chart-card">
+        <h3>Scam Types Distribution</h3>
+        <div class="chart-container">
+            <canvas id="scam-types-chart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3>Pattern Detection</h3>
+        <div class="chart-container">
+            <canvas id="patterns-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Sessions List -->
+<div class="sessions-section" id="sessions">
+    <div class="section-header">
+        <h2>Recent Sessions</h2>
+        <div class="section-actions">
+            <select id="status-filter" onchange="filterSessions()">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="completed">Completed</option>
+                <option value="archived">Archived</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="sessions-table-container">
+        <table class="sessions-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Title / ID</th>
+                    <th>Scam Type</th>
+                    <th>Messages</th>
+                    <th>Time Wasted</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="sessions-tbody">
+                <tr>
+                    <td colspan="7" class="loading-row">Loading sessions...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+        <button class="action-card" onclick="window.location.href='/wallet'">
+            <span class="action-icon">💰</span>
+            <span class="action-title">Wallet Honeypot</span>
+            <span class="action-desc">Display fake crypto wallet</span>
+        </button>
+        <button class="action-card" onclick="window.location.href='/analysis'">
+            <span class="action-icon">🔍</span>
+            <span class="action-title">Analyze File</span>
+            <span class="action-desc">Upload and analyze suspicious files</span>
+        </button>
+        <button class="action-card" onclick="exportAuditLog()">
+            <span class="action-icon">📋</span>
+            <span class="action-title">Export Audit Log</span>
+            <span class="action-desc">Download compliance report</span>
+        </button>
+        <button class="action-card danger" onclick="confirmWipe()">
+            <span class="action-icon">🗑️</span>
+            <span class="action-title">Full Wipe</span>
+            <span class="action-desc">Reset all data for VM snapshot</span>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/charts.js"></script>
+<script>
+    // Load dashboard data on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadSessions();
+    });
+
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/stats');
+            const stats = await response.json();
+
+            document.getElementById('total-sessions').textContent = stats.total_sessions;
+            document.getElementById('active-sessions').textContent = stats.active_sessions;
+            document.getElementById('time-wasted').textContent = formatDuration(stats.total_time_wasted_seconds);
+            document.getElementById('total-attachments').textContent = stats.total_attachments;
+
+            // Update charts
+            updateScamTypesChart(stats.scam_types_breakdown);
+            updatePatternsChart(stats.pattern_types_breakdown);
+        } catch (error) {
+            showToast('Failed to load stats', 'error');
+        }
+    }
+
+    async function loadSessions() {
+        const filter = document.getElementById('status-filter').value;
+        const url = filter ? `/api/sessions?status=${filter}` : '/api/sessions';
+
+        try {
+            const response = await fetch(url);
+            const sessions = await response.json();
+
+            const tbody = document.getElementById('sessions-tbody');
+
+            if (sessions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-row">
+                            No sessions found. <a href="#" onclick="showNewSessionModal()">Create your first session</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = sessions.map(session => `
+                <tr onclick="window.location.href='/session/${session.id}'">
+                    <td>
+                        <span class="status-badge status-${session.status}">${session.status}</span>
+                    </td>
+                    <td>
+                        <div class="session-title">${session.title || 'Untitled Session'}</div>
+                        <div class="session-id">${session.id.substring(0, 8)}...</div>
+                    </td>
+                    <td>${session.scam_type || '-'}</td>
+                    <td>${session.messages?.length || 0}</td>
+                    <td>${formatDuration(session.total_time_wasted_seconds)}</td>
+                    <td>${formatDate(session.created_at)}</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="event.stopPropagation(); viewSession('${session.id}')">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            showToast('Failed to load sessions', 'error');
+        }
+    }
+
+    function filterSessions() {
+        loadSessions();
+    }
+
+    function viewSession(id) {
+        window.location.href = `/session/${id}`;
+    }
+
+    async function exportAuditLog() {
+        showToast('Generating audit report...', 'info');
+        window.location.href = '/api/export/audit';
+    }
+
+    async function confirmWipe() {
+        if (confirm('Are you sure you want to wipe ALL data? This cannot be undone.')) {
+            if (confirm('This will delete all sessions, messages, and files. Proceed?')) {
+                try {
+                    const response = await fetch('/api/safety/full-wipe', { method: 'POST' });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast('Data wiped successfully', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast('Wipe failed: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    showToast('Wipe failed', 'error');
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

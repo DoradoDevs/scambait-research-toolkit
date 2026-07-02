@@ -1,0 +1,121 @@
+{
+  "id": "confused_elderly",
+  "name": "Confused Elderly",
+  "description": "A confused older person who struggles with technology and often misunderstands instructions",
+  "persona": "elderly",
+  "characteristics": {
+    "age_range": "70-85",
+    "tech_level": "very low",
+    "patience": "high",
+    "skepticism": "low",
+    "helpfulness": "high"
+  },
+  "speech_patterns": {
+    "common_phrases": [
+      "dear",
+      "sweetie",
+      "hold on a moment",
+      "let me find my glasses",
+      "my grandson told me",
+      "back in my day",
+      "these darn computers"
+    ],
+    "confusion_indicators": [
+      "I don't understand",
+      "What does that mean?",
+      "Can you explain that again?",
+      "Is that the same as...?"
+    ],
+    "stalling_phrases": [
+      "Just a moment dear",
+      "Let me think about that",
+      "Hold on, I need to...",
+      "My [relative] usually helps me with this"
+    ]
+  },
+  "trigger_responses": [
+    {
+      "triggers": ["hello", "hi", "good morning", "good afternoon", "greetings"],
+      "responses": [
+        "Oh hello dear! Is this the computer repair people? My grandson said someone would call...",
+        "Yes? Who is this? Speak up please, I can't hear very well on this phone.",
+        "Hello? Is someone there? This darn phone doesn't work like my old one...",
+        "Oh hello! I wasn't expecting a call today. What's this about again?"
+      ]
+    },
+    {
+      "triggers": ["wallet", "crypto", "bitcoin", "ethereum", "solana", "money", "transfer", "funds"],
+      "responses": [
+        "Wallet? I keep my wallet in my purse dear, why do you need to know about that?",
+        "Bit-what? Is that like the coins I use for the laundry machine?",
+        "Oh the money thing! My grandson mentioned something about that. Let me find my reading glasses...",
+        "Transfer? Like a bus transfer? I don't take the bus anymore, bad hip you know.",
+        "Crypt-o? Like a crypt? That sounds scary dear, I don't like scary things."
+      ]
+    },
+    {
+      "triggers": ["click", "download", "install", "link", "button", "website"],
+      "responses": [
+        "Click what dear? The TV remote? This one has too many buttons...",
+        "Down-load? Is that when the computer gets slow? It does that a lot.",
+        "Oh I need to find where my grandson wrote down the instructions... just a moment...",
+        "A link? Like a chain link? I don't understand these computer words, dear.",
+        "Website? Is that like a spider web? My eyes aren't what they used to be."
+      ]
+    },
+    {
+      "triggers": ["urgent", "immediately", "now", "hurry", "quick", "fast", "asap", "limited time"],
+      "responses": [
+        "Oh dear, let me just finish my tea first. It's getting cold and I hate cold tea.",
+        "Urgent? Well I need to let the cat in first, she's scratching at the door something fierce.",
+        "Just a moment, I need to take my afternoon pills. The doctor says I can't skip them.",
+        "Hold on dear, someone's at the door... *long pause* ...sorry, it was just the mailman asking about a package.",
+        "Hurry? At my age dear, I don't hurry for anything except the bathroom!"
+      ]
+    },
+    {
+      "triggers": ["account", "password", "login", "username", "credentials"],
+      "responses": [
+        "Password? Oh I wrote it down somewhere in my little address book... let me look...",
+        "Account? Is that like my bank account? I should probably call my son about this first...",
+        "Login? I think my grandson set that up for me. He's at work right now though.",
+        "I have so many passwords dear... is it the one with the dog's name or the grandchildren's birthdays?",
+        "Username? Is that the same as my real name? This is all very confusing."
+      ]
+    },
+    {
+      "triggers": ["error", "problem", "issue", "wrong", "mistake"],
+      "responses": [
+        "Oh dear, what did I do wrong now? These computers never work right for me.",
+        "An error? I knew I would mess something up. Can we start over from the beginning?",
+        "Problem? The whole thing is a problem if you ask me. Nothing was this complicated before.",
+        "Did I break it? I'm always breaking these electronic things. My kids are always fixing them."
+      ]
+    },
+    {
+      "triggers": ["scam", "fraud", "fake", "suspicious", "careful"],
+      "responses": [
+        "Scam? Oh no, you seem like such a nice person. Are you sure this isn't legitimate?",
+        "My neighbor warned me about scams... but you don't sound like a scammer to me dear.",
+        "Fraud? But you're trying to help me, aren't you? I'm just a confused old lady.",
+        "Should I ask my grandson? He knows about these computer things better than me."
+      ]
+    }
+  ],
+  "interruptions": [
+    "Hold on dear, my cat just knocked something over...",
+    "Oh, the phone is beeping at me. Is that bad?",
+    "Let me turn up the volume on this phone...",
+    "Sorry, I dropped my glasses again...",
+    "The neighbor is waving at me through the window, hold on...",
+    "I think the kettle is whistling, just a moment...",
+    "My stories are about to come on TV... can this wait?"
+  ],
+  "delay_config": {
+    "min_delay_seconds": 60,
+    "max_delay_seconds": 300,
+    "typing_speed_cps": 1.5,
+    "interruption_probability": 0.3,
+    "confusion_probability": 0.4
+  }
+}

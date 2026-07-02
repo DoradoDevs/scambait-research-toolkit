@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis - Scambait Research Suite{% endblock %}
+
+{% block breadcrumb %}
+<a href="/">Dashboard</a> / <span>Analysis</span>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <div class="analysis-grid">
+        <!-- File Analysis -->
+        <div class="analysis-section">
+            <h2>File Analysis</h2>
+            <div class="upload-zone" id="file-drop-zone">
+                <input type="file" id="analysis-file" onchange="analyzeFile()" hidden>
+                <div class="drop-content">
+                    <span class="drop-icon">📁</span>
+                    <p>Drag & drop a file here or</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('analysis-file').click()">
+                        Choose File
+                    </button>
+                    <p class="hint">Max 10MB. All file types accepted for analysis.</p>
+                </div>
+            </div>
+
+            <div id="file-results" class="results-container hidden">
+                <h3>Analysis Results</h3>
+                <div id="file-results-content"></div>
+            </div>
+        </div>
+
+        <!-- URL Analysis -->
+        <div class="analysis-section">
+            <h2>URL/Link Analysis</h2>
+            <div class="url-input-area">
+                <input type="text" id="url-input" placeholder="Enter URL to analyze..." class="input-lg">
+                <button class="btn btn-primary" onclick="analyzeUrl()">Analyze</button>
+            </div>
+
+            <div id="url-results" class="results-container hidden">
+                <h3>URL Analysis Results</h3>
+                <div id="url-results-content"></div>
+            </div>
+        </div>
+
+        <!-- Text Pattern Detection -->
+        <div class="analysis-section">
+            <h2>Text Pattern Detection</h2>
+            <textarea id="text-input" rows="6" placeholder="Paste suspicious text to analyze for scam patterns..."></textarea>
+            <button class="btn btn-primary" onclick="analyzeText()">Detect Patterns</button>
+
+            <div id="text-results" class="results-container hidden">
+                <h3>Pattern Detection Results</h3>
+                <div id="text-results-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Analyses -->
+    <div class="recent-section">
+        <h2>Recent Analyses</h2>
+        <div class="recent-grid" id="recent-analyses">
+            <p class="empty">No recent analyses</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Drag and drop handling
+    const dropZone = document.getElementById('file-drop-zone');
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            analyzeFileObject(file);
+        }
+    });
+
+    async function analyzeFile() {
+        const fileInput = document.getElementById('analysis-file');
+        const file = fileInput.files[0];
+        if (file) {
+            await analyzeFileObject(file);
+        }
+    }
+
+    async function analyzeFileObject(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('session_id', 'analysis-only');
+
+        try {
+            showToast('Analyzing file...', 'info');
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Analysis failed');
+            }
+
+            const result = await response.json();
+            displayFileResults(result);
+            showToast('Analysis complete', 'success');
+
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    function displayFileResults(result) {
+        const container = document.getElementById('file-results');
+        const content = document.getElementById('file-results-content');
+
+        const analysisData = result.analysis_result || {};
+
+        content.innerHTML = `
+            <div class="result-card">
+                <div class="result-header">
+                    <h4>${escapeHtml(result.original_filename)}</h4>
+                    ${result.is_malicious ? '<span class="badge danger">Suspicious</span>' : '<span class="badge success">Clean</span>'}
+                </div>
+
+                <div class="result-section">
+                    <h5>File Information</h5>
+                    <table class="info-table">
+                        <tr><td>Size</td><td>${formatBytes(result.file_size)}</td></tr>
+                        <tr><td>MIME Type</td><td>${result.mime_type}</td></tr>
+                        <tr><td>File Type</td><td>${analysisData.file_type || 'Unknown'}</td></tr>
+                    </table>
+                </div>
+
+                <div class="result-section">
+                    <h5>Hashes</h5>
+                    <table class="info-table hash-table">
+                        <tr><td>MD5</td><td><code>${result.md5_hash}</code></td></tr>
+                        <tr><td>SHA1</td><td><code>${result.sha1_hash}</code></td></tr>
+                        <tr><td>SHA256</td><td><code>${result.sha256_hash}</code></td></tr>
+                    </table>
+                </div>
+
+                ${analysisData.suspicious_indicators?.length > 0 ? `
+                <div class="result-section">
+                    <h5>Suspicious Indicators</h5>
+                    <ul class="indicator-list">
+                        ${analysisData.suspicious_indicators.map(i => `<li class="warning">${escapeHtml(i)}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+        `;
+
+        container.classList.remove('hidden');
+    }
+
+    async function analyzeUrl() {
+        const url = document.getElementById('url-input').value.trim();
+        if (!url) {
+            showToast('Please enter a URL', 'error');
+            return;
+        }
+
+        try {
+            showToast('Analyzing URL...', 'info');
+
+            const response = await fetch(`/api/analyze-url?url=${encodeURIComponent(url)}`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+            displayUrlResults(result);
+            showToast('Analysis complete', 'success');
+
+        } catch (error) {
+            showToast('Failed to analyze URL', 'error');
+        }
+    }
+
+    function displayUrlResults(result) {
+        const container = document.getElementById('url-results');
+        const content = document.getElementById('url-results-content');
+
+        content.innerHTML = `
+            <div class="result-card">
+                <div class="result-header">
+                    <h4>URL Analysis</h4>
+                    ${result.is_suspicious ? '<span class="badge danger">Suspicious</span>' : '<span class="badge success">Clean</span>'}
+                </div>
+
+                <div class="result-section">
+                    <h5>URL Information</h5>
+                    <table class="info-table">
+                        <tr><td>Original</td><td>${escapeHtml(result.original_url)}</td></tr>
+                        <tr><td>Defanged</td><td><code>${escapeHtml(result.defanged_url)}</code></td></tr>
+                        <tr><td>Domain</td><td>${escapeHtml(result.domain)}</td></tr>
+                    </table>
+                </div>
+
+                ${result.suspicious_indicators?.length > 0 ? `
+                <div class="result-section">
+                    <h5>Suspicious Indicators</h5>
+                    <ul class="indicator-list">
+                        ${result.suspicious_indicators.map(i => `<li class="warning">${escapeHtml(i)}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+
+                ${result.pattern_matches?.length > 0 ? `
+                <div class="result-section">
+                    <h5>Pattern Matches</h5>
+                    <div class="tags">
+                        ${result.pattern_matches.map(p => `<span class="tag">${escapeHtml(p)}</span>`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+
+        container.classList.remove('hidden');
+    }
+
+    async function analyzeText() {
+        const text = document.getElementById('text-input').value.trim();
+        if (!text) {
+            showToast('Please enter text to analyze', 'error');
+            return;
+        }
+
+        try {
+            showToast('Analyzing text...', 'info');
+
+            const response = await fetch(`/api/detect-patterns?text=${encodeURIComponent(text)}`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+            displayTextResults(result);
+            showToast('Analysis complete', 'success');
+
+        } catch (error) {
+            showToast('Failed to analyze text', 'error');
+        }
+    }
+
+    function displayTextResults(result) {
+        const container = document.getElementById('text-results');
+        const content = document.getElementById('text-results-content');
+
+        const riskClass = result.risk_level === 'high' ? 'danger' : result.risk_level === 'medium' ? 'warning' : 'success';
+
+        content.innerHTML = `
+            <div class="result-card">
+                <div class="result-header">
+                    <h4>Pattern Detection</h4>
+                    <span class="badge ${riskClass}">${result.risk_level.toUpperCase()} RISK</span>
+                </div>
+
+                <div class="result-section">
+                    <h5>Summary</h5>
+                    <table class="info-table">
+                        <tr><td>Risk Score</td><td>${result.total_score.toFixed(2)}</td></tr>
+                        <tr><td>Patterns Found</td><td>${result.patterns_found.length}</td></tr>
+                    </table>
+                </div>
+
+                ${result.patterns_found.length > 0 ? `
+                <div class="result-section">
+                    <h5>Detected Patterns</h5>
+                    ${result.patterns_found.map(p => `
+                        <div class="pattern-card">
+                            <div class="pattern-header">
+                                <span class="pattern-type">${p.type}</span>
+                                <span class="pattern-confidence">${Math.round(p.confidence * 100)}% confidence</span>
+                            </div>
+                            <div class="pattern-evidence">Evidence: ${escapeHtml(p.evidence)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : '<p>No scam patterns detected.</p>'}
+            </div>
+        `;
+
+        container.classList.remove('hidden');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Session - Scambait Research Suite{% endblock %}
+
+{% block breadcrumb %}
+<a href="/">Dashboard</a> / <span id="breadcrumb-title">Session</span>
+{% endblock %}
+
+{% block content %}
+<div class="session-container">
+    <!-- Session Header -->
+    <div class="session-header">
+        <div class="session-info">
+            <h1 id="session-title">Loading...</h1>
+            <div class="session-meta">
+                <span class="status-badge" id="session-status">-</span>
+                <span id="session-type">-</span>
+                <span id="session-created">-</span>
+            </div>
+        </div>
+        <div class="session-actions">
+            <select id="status-select" onchange="updateSessionStatus()">
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="completed">Completed</option>
+                <option value="archived">Archived</option>
+            </select>
+            <button class="btn btn-secondary" onclick="exportSession()">Export</button>
+            <button class="btn btn-danger" onclick="deleteSession()">Delete</button>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="session-grid">
+        <!-- Timeline Column -->
+        <div class="timeline-column">
+            <div class="timeline-header">
+                <h2>Message Timeline</h2>
+                <button class="btn btn-sm" onclick="showAddMessageModal()">+ Add Message</button>
+            </div>
+
+            <div class="timeline-container" id="timeline">
+                <div class="loading-indicator">Loading messages...</div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-area">
+                <div class="input-tabs">
+                    <button class="tab active" data-direction="inbound">Inbound (Scammer)</button>
+                    <button class="tab" data-direction="outbound">Outbound (You)</button>
+                </div>
+                <textarea id="message-content" placeholder="Enter message content..."></textarea>
+                <div class="input-actions">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="apply-delay"> Apply delay
+                    </label>
+                    <button class="btn btn-primary" onclick="addMessage()">Add Message</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column -->
+        <div class="sidebar-column">
+            <!-- Script Suggestions -->
+            <div class="panel">
+                <h3>Response Suggestions</h3>
+                <div id="suggestions-container">
+                    <p class="hint">Enter scammer message to get suggestions</p>
+                </div>
+                <button class="btn btn-sm btn-block" onclick="getSuggestions()">Get Suggestions</button>
+            </div>
+
+            <!-- Pattern Flags -->
+            <div class="panel">
+                <h3>Detected Patterns</h3>
+                <div id="patterns-container">
+                    <p class="empty">No patterns detected yet</p>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            <div class="panel">
+                <h3>Attachments</h3>
+                <div id="attachments-container">
+                    <p class="empty">No attachments</p>
+                </div>
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="file-input" onchange="uploadFile()" hidden>
+                    <button class="btn btn-sm btn-block" onclick="document.getElementById('file-input').click()">
+                        📎 Upload File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Session Stats -->
+            <div class="panel">
+                <h3>Session Stats</h3>
+                <div class="stats-list">
+                    <div class="stat-row">
+                        <span>Messages</span>
+                        <span id="stat-messages">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Time Wasted</span>
+                        <span id="stat-time">0m</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Patterns Found</span>
+                        <span id="stat-patterns">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Attachments</span>
+                        <span id="stat-attachments">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="panel">
+                <h3>Notes</h3>
+                <textarea id="session-notes" rows="4" placeholder="Session notes..."></textarea>
+                <button class="btn btn-sm" onclick="saveNotes()">Save Notes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/timeline.js"></script>
+<script>
+    const sessionId = '{{ session_id }}';
+    let currentSession = null;
+    let messageDirection = 'inbound';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSession();
+        setupTabs();
+    });
+
+    function setupTabs() {
+        document.querySelectorAll('.input-tabs .tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.input-tabs .tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                messageDirection = tab.dataset.direction;
+            });
+        });
+    }
+
+    async function loadSession() {
+        try {
+            const response = await fetch(`/api/sessions/${sessionId}`);
+            currentSession = await response.json();
+
+            // Update header
+            document.getElementById('session-title').textContent = currentSession.title || 'Untitled Session';
+            document.getElementById('breadcrumb-title').textContent = currentSession.title || 'Session';
+            document.getElementById('session-status').textContent = currentSession.status;
+            document.getElementById('session-status').className = `status-badge status-${currentSession.status}`;
+            document.getElementById('session-type').textContent = currentSession.scam_type || 'Unknown type';
+            document.getElementById('session-created').textContent = `Created ${formatDate(currentSession.created_at)}`;
+            document.getElementById('status-select').value = currentSession.status;
+            document.getElementById('session-notes').value = currentSession.notes || '';
+
+            // Update stats
+            document.getElementById('stat-messages').textContent = currentSession.messages?.length || 0;
+            document.getElementById('stat-time').textContent = formatDuration(currentSession.total_time_wasted_seconds);
+            document.getElementById('stat-patterns').textContent = currentSession.pattern_flags?.length || 0;
+            document.getElementById('stat-attachments').textContent = currentSession.attachments?.length || 0;
+
+            // Render timeline
+            renderTimeline(currentSession.messages || []);
+
+            // Render patterns
+            renderPatterns(currentSession.pattern_flags || []);
+
+            // Render attachments
+            renderAttachments(currentSession.attachments || []);
+
+        } catch (error) {
+            showToast('Failed to load session', 'error');
+        }
+    }
+
+    function renderTimeline(messages) {
+        const container = document.getElementById('timeline');
+
+        if (messages.length === 0) {
+            container.innerHTML = '<p class="empty">No messages yet. Add the first message below.</p>';
+            return;
+        }
+
+        container.innerHTML = messages.map(msg => `
+            <div class="timeline-item ${msg.direction}">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <span class="direction-badge ${msg.direction}">${msg.direction === 'inbound' ? 'Scammer' : 'You'}</span>
+                        <span class="timestamp">${formatTime(msg.timestamp)}</span>
+                        ${msg.delay_applied_seconds > 0 ? `<span class="delay-badge">+${msg.delay_applied_seconds}s delay</span>` : ''}
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.content)}</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function renderPatterns(patterns) {
+        const container = document.getElementById('patterns-container');
+
+        if (patterns.length === 0) {
+            container.innerHTML = '<p class="empty">No patterns detected yet</p>';
+            return;
+        }
+
+        container.innerHTML = patterns.map(p => `
+            <div class="pattern-item">
+                <span class="pattern-type">${p.pattern_type}</span>
+                <span class="pattern-confidence">${Math.round(p.confidence * 100)}%</span>
+                <div class="pattern-evidence">${escapeHtml(p.evidence)}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderAttachments(attachments) {
+        const container = document.getElementById('attachments-container');
+
+        if (attachments.length === 0) {
+            container.innerHTML = '<p class="empty">No attachments</p>';
+            return;
+        }
+
+        container.innerHTML = attachments.map(a => `
+            <div class="attachment-item ${a.is_malicious ? 'malicious' : ''}">
+                <span class="attachment-icon">📎</span>
+                <div class="attachment-info">
+                    <div class="attachment-name">${escapeHtml(a.original_filename)}</div>
+                    <div class="attachment-meta">${formatBytes(a.file_size)} | ${a.mime_type}</div>
+                </div>
+                ${a.is_malicious ? '<span class="warning-badge">⚠️</span>' : ''}
+            </div>
+        `).join('');
+    }
+
+    async function addMessage() {
+        const content = document.getElementById('message-content').value.trim();
+        if (!content) {
+            showToast('Please enter message content', 'error');
+            return;
+        }
+
+        const applyDelay = document.getElementById('apply-delay').checked;
+
+        try {
+            await fetch('/api/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    direction: messageDirection,
+                    content: content,
+                    apply_delay: applyDelay
+                })
+            });
+
+            document.getElementById('message-content').value = '';
+            loadSession();
+            showToast('Message added', 'success');
+        } catch (error) {
+            showToast('Failed to add message', 'error');
+        }
+    }
+
+    async function getSuggestions() {
+        const lastInbound = currentSession?.messages?.filter(m => m.direction === 'inbound').pop();
+        const context = lastInbound?.content || '';
+
+        try {
+            const response = await fetch(`/api/suggest-response?session_id=${sessionId}&context=${encodeURIComponent(context)}&script_id=${currentSession?.script_id || ''}`);
+            const suggestion = await response.json();
+
+            document.getElementById('suggestions-container').innerHTML = `
+                <div class="suggestion-card">
+                    <div class="suggestion-persona">Persona: ${suggestion.persona}</div>
+                    <div class="suggestion-text">${escapeHtml(suggestion.text)}</div>
+                    <div class="suggestion-delay">Suggested delay: ${suggestion.delay_seconds}s</div>
+                    <button class="btn btn-sm" onclick="useSuggestion('${escapeHtml(suggestion.text).replace(/'/g, "\\'")}')">Use This</button>
+                </div>
+            `;
+        } catch (error) {
+            showToast('Failed to get suggestions', 'error');
+        }
+    }
+
+    function useSuggestion(text) {
+        document.getElementById('message-content').value = text;
+        messageDirection = 'outbound';
+        document.querySelectorAll('.input-tabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.input-tabs .tab[data-direction="outbound"]').classList.add('active');
+    }
+
+    async function uploadFile() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('session_id', sessionId);
+
+        try {
+            showToast('Uploading and analyzing...', 'info');
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('Upload failed');
+
+            loadSession();
+            showToast('File uploaded and analyzed', 'success');
+        } catch (error) {
+            showToast('Failed to upload file', 'error');
+        }
+
+        fileInput.value = '';
+    }
+
+    async function updateSessionStatus() {
+        const status = document.getElementById('status-select').value;
+
+        try {
+            await fetch(`/api/sessions/${sessionId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+
+            loadSession();
+            showToast('Status updated', 'success');
+        } catch (error) {
+            showToast('Failed to update status', 'error');
+        }
+    }
+
+    async function saveNotes() {
+        const notes = document.getElementById('session-notes').value;
+
+        try {
+            await fetch(`/api/sessions/${sessionId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes })
+            });
+
+            showToast('Notes saved', 'success');
+        } catch (error) {
+            showToast('Failed to save notes', 'error');
+        }
+    }
+
+    function exportSession() {
+        window.location.href = `/api/export/session/${sessionId}`;
+    }
+
+    async function deleteSession() {
+        if (!confirm('Are you sure you want to delete this session?')) return;
+
+        try {
+            await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' });
+            showToast('Session deleted', 'success');
+            setTimeout(() => window.location.href = '/', 1000);
+        } catch (error) {
+            showToast('Failed to delete session', 'error');
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatTime(timestamp) {
+        return new Date(timestamp).toLocaleString();
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+</script>
+{% endblock %}

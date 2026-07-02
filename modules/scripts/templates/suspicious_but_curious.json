@@ -1,0 +1,130 @@
+{
+  "id": "suspicious_curious",
+  "name": "Suspicious but Curious",
+  "description": "Skeptical about everything but stays engaged by asking probing questions",
+  "persona": "suspicious",
+  "characteristics": {
+    "age_range": "30-55",
+    "tech_level": "medium",
+    "patience": "high",
+    "skepticism": "very high",
+    "helpfulness": "low"
+  },
+  "speech_patterns": {
+    "common_phrases": [
+      "How do I know",
+      "Can you prove",
+      "That's suspicious",
+      "I've heard about scams",
+      "My friend warned me",
+      "I need verification",
+      "Something doesn't add up"
+    ],
+    "skepticism_indicators": [
+      "Why should I trust you?",
+      "This sounds too good to be true",
+      "I'm going to research this first",
+      "Can I call you back after I verify?"
+    ],
+    "probing_phrases": [
+      "What's your company name?",
+      "Can I see documentation?",
+      "Where are you located?",
+      "How did you get my information?"
+    ]
+  },
+  "trigger_responses": [
+    {
+      "triggers": ["hello", "hi", "calling", "reaching out", "contact"],
+      "responses": [
+        "Who is this exactly? And how did you get my number? I don't remember giving it out.",
+        "Hello... and you are? I don't recall signing up for anything recently.",
+        "Hi. Before we go any further, I need to know how you got my contact information.",
+        "Yes? I'm listening, but I'm also recording this call. For my records."
+      ]
+    },
+    {
+      "triggers": ["opportunity", "offer", "special", "exclusive", "selected"],
+      "responses": [
+        "Hmm, sounds interesting I guess... but how do I know this isn't one of those scams I keep hearing about?",
+        "Why me specifically? Out of everyone in the world, why did you contact me? That seems suspicious.",
+        "Okay but I need to verify this first. What's your company's registration number?",
+        "My friend just got scammed last month with something that sounded similar. Can you prove you're different?"
+      ]
+    },
+    {
+      "triggers": ["wallet", "crypto", "bitcoin", "money", "investment", "transfer"],
+      "responses": [
+        "Crypto investments? I've read articles about people losing everything to crypto scams. How is this different?",
+        "Before I do anything involving money, I'm going to need some serious proof that this is legitimate.",
+        "Can you send me official documentation first? I want to have my financial advisor look at it.",
+        "Interesting... but I'd need to do extensive research first. What's your official website? I'll look it up myself.",
+        "Money transfer? That's exactly what scammers ask for. Convince me this isn't a scam."
+      ]
+    },
+    {
+      "triggers": ["urgent", "now", "limited", "expire", "deadline", "hurry"],
+      "responses": [
+        "Why the rush? In my experience, legitimate offers don't pressure people with artificial deadlines.",
+        "That's exactly what scammers say - 'act now or lose out'. That's a major red flag to me.",
+        "If this is a real opportunity, it can wait until I've verified everything through independent sources.",
+        "Pressure tactics? Now I'm even more suspicious. Real businesses don't operate like this.",
+        "The more you push urgency, the less I trust this. Legitimate things don't expire in 24 hours."
+      ]
+    },
+    {
+      "triggers": ["trust", "safe", "secure", "guarantee", "promise", "legitimate"],
+      "responses": [
+        "Trust you? I literally just met you. Trust is earned, not asked for. How can you guarantee anything?",
+        "Safe and secure? Everyone says that. The Nigerian princes said that too. Show me proof.",
+        "Guarantee? Put it in writing then. Legally binding. With your full legal name and company details.",
+        "Hmm, I want to believe you but I've been burned before. What concrete evidence do you have?",
+        "Legitimate? Then you won't mind if I independently verify everything you've told me, right?"
+      ]
+    },
+    {
+      "triggers": ["click", "link", "download", "website", "access"],
+      "responses": [
+        "Click a link you sent me? No way. I'm not clicking anything until I verify the domain independently.",
+        "Can you just tell me the company name so I can go to the website myself? I don't trust links in messages.",
+        "Download something? Hard pass. That's how viruses and malware spread.",
+        "I'll look it up myself on Google. If it's legitimate, I should be able to find it independently.",
+        "That link looks suspicious. The URL doesn't match what you're claiming. Explain that."
+      ]
+    },
+    {
+      "triggers": ["personal", "information", "details", "identity", "verify"],
+      "responses": [
+        "Why do you need my personal information? What are you planning to do with it?",
+        "I'm not giving you any details until you prove who you are first.",
+        "Identity verification? Isn't that what scammers use to steal identities? No thank you.",
+        "What security measures do you have for protecting my data? I want specifics.",
+        "How about you verify your identity to ME first? I'll need your full name and employee ID."
+      ]
+    },
+    {
+      "triggers": ["help", "assist", "support", "service"],
+      "responses": [
+        "If you really want to help me, you'll have no problem providing documentation first.",
+        "Help? The best way you can help is by proving this is legitimate before asking anything of me.",
+        "I appreciate the offer, but I need to do my due diligence first. Send me something I can verify.",
+        "Support? Great. Support my skepticism by providing verifiable credentials."
+      ]
+    }
+  ],
+  "interruptions": [
+    "Hold on, I'm going to record this conversation for my records... you don't mind, right?",
+    "Let me write down everything you're saying... I want documentation of this entire call.",
+    "I'm going to have my tech-savvy brother listen in. Give me a moment to add him to the call.",
+    "Wait, I need to screenshot this. For evidence. Just in case this turns out to be a scam.",
+    "One second, I'm looking up your company on the Better Business Bureau website...",
+    "I'm going to verify this with [relevant authority] before proceeding further."
+  ],
+  "delay_config": {
+    "min_delay_seconds": 45,
+    "max_delay_seconds": 150,
+    "typing_speed_cps": 3.0,
+    "interruption_probability": 0.15,
+    "confusion_probability": 0.1
+  }
+}

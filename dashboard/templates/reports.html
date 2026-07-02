@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Scambait Research Suite{% endblock %}
+
+{% block breadcrumb %}
+<a href="/">Dashboard</a> / <span>Reports</span>
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <!-- Export Options -->
+    <div class="export-section">
+        <h2>Export Reports</h2>
+        <div class="export-grid">
+            <div class="export-card">
+                <div class="export-icon">📊</div>
+                <h3>Session Report</h3>
+                <p>Export detailed report for a specific session including messages, patterns, and attachments.</p>
+                <select id="session-select" class="input-block">
+                    <option value="">Select a session...</option>
+                </select>
+                <button class="btn btn-primary btn-block" onclick="exportSessionReport()">Export Session</button>
+            </div>
+
+            <div class="export-card">
+                <div class="export-icon">📋</div>
+                <h3>Audit Log</h3>
+                <p>Export complete audit trail for compliance review. Includes all system actions and timestamps.</p>
+                <button class="btn btn-primary btn-block" onclick="exportAuditReport()">Export Audit Log</button>
+            </div>
+
+            <div class="export-card">
+                <div class="export-icon">📈</div>
+                <h3>Statistics Summary</h3>
+                <p>Export aggregated statistics including scam types, patterns, and time analysis.</p>
+                <button class="btn btn-primary btn-block" onclick="exportStats()">Export Statistics</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Log Viewer -->
+    <div class="audit-section">
+        <div class="section-header">
+            <h2>Audit Log</h2>
+            <div class="section-actions">
+                <input type="text" id="audit-search" placeholder="Filter actions..." onkeyup="filterAuditLog()">
+            </div>
+        </div>
+
+        <div class="audit-table-container">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-tbody">
+                    <tr>
+                        <td colspan="4" class="loading-row">Loading audit log...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="btn btn-sm" onclick="loadAuditLog(currentOffset - 50)" id="prev-btn" disabled>Previous</button>
+            <span id="page-info">Page 1</span>
+            <button class="btn btn-sm" onclick="loadAuditLog(currentOffset + 50)" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <!-- Generated Reports -->
+    <div class="generated-section">
+        <h2>Generated Reports</h2>
+        <div id="generated-reports">
+            <p class="empty">No reports generated yet. Use the export options above to create reports.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentOffset = 0;
+    const limit = 50;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSessions();
+        loadAuditLog(0);
+        loadGeneratedReports();
+    });
+
+    async function loadSessions() {
+        try {
+            const response = await fetch('/api/sessions');
+            const sessions = await response.json();
+
+            const select = document.getElementById('session-select');
+            sessions.forEach(session => {
+                const option = document.createElement('option');
+                option.value = session.id;
+                option.textContent = session.title || `Session ${session.id.substring(0, 8)}...`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Failed to load sessions');
+        }
+    }
+
+    async function loadAuditLog(offset = 0) {
+        currentOffset = Math.max(0, offset);
+
+        try {
+            const response = await fetch(`/api/audit-log?limit=${limit}&offset=${currentOffset}`);
+            const logs = await response.json();
+
+            const tbody = document.getElementById('audit-tbody');
+
+            if (logs.length === 0 && currentOffset === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-row">No audit entries</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${formatTimestamp(log.timestamp)}</td>
+                    <td><code>${escapeHtml(log.action)}</code></td>
+                    <td class="details-cell">${formatDetails(log.details)}</td>
+                    <td>${log.user_id}</td>
+                </tr>
+            `).join('');
+
+            // Update pagination
+            document.getElementById('prev-btn').disabled = currentOffset === 0;
+            document.getElementById('next-btn').disabled = logs.length < limit;
+            document.getElementById('page-info').textContent = `Page ${Math.floor(currentOffset / limit) + 1}`;
+
+        } catch (error) {
+            showToast('Failed to load audit log', 'error');
+        }
+    }
+
+    function filterAuditLog() {
+        const filter = document.getElementById('audit-search').value.toLowerCase();
+        const rows = document.querySelectorAll('#audit-tbody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    }
+
+    function exportSessionReport() {
+        const sessionId = document.getElementById('session-select').value;
+        if (!sessionId) {
+            showToast('Please select a session', 'error');
+            return;
+        }
+
+        showToast('Generating report...', 'info');
+        window.location.href = `/api/export/session/${sessionId}`;
+    }
+
+    function exportAuditReport() {
+        showToast('Generating audit report...', 'info');
+        window.location.href = '/api/export/audit';
+    }
+
+    async function exportStats() {
+        try {
+            const response = await fetch('/api/stats');
+            const stats = await response.json();
+
+            const blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scambait_stats_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('Statistics exported', 'success');
+        } catch (error) {
+            showToast('Failed to export statistics', 'error');
+        }
+    }
+
+    async function loadGeneratedReports() {
+        // This would typically load from a reports endpoint
+        // For now, we just show a placeholder
+        const container = document.getElementById('generated-reports');
+
+        // Check if there are any exported files
+        // In a real implementation, this would query the /data/exports directory
+        container.innerHTML = `
+            <div class="report-hint">
+                <p>Reports are saved to the <code>data/exports/</code> directory.</p>
+                <p>Each export creates a timestamped JSON file that can be used for:</p>
+                <ul>
+                    <li>Compliance documentation</li>
+                    <li>Research analysis</li>
+                    <li>Sharing findings (with proper authorization)</li>
+                </ul>
+            </div>
+        `;
+    }
+
+    function formatTimestamp(ts) {
+        return new Date(ts).toLocaleString();
+    }
+
+    function formatDetails(details) {
+        if (!details) return '-';
+        if (typeof details === 'string') {
+            try {
+                details = JSON.parse(details);
+            } catch {
+                return escapeHtml(details);
+            }
+        }
+        return `<pre class="details-json">${escapeHtml(JSON.stringify(details, null, 2))}</pre>`;
+    }
+
+    function escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(text);
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}
